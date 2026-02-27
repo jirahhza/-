@@ -1,93 +1,76 @@
-require("dotenv").config();
-const {
-  Client,
-  GatewayIntentBits,
-  Partials,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  StringSelectMenuBuilder,
-  Events
-} = require("discord.js");
+const { 
+  Client, 
+  GatewayIntentBits, 
+  Partials, 
+  ActionRowBuilder, 
+  ButtonBuilder, 
+  ButtonStyle, 
+  ChannelType 
+} = require('discord.js');
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers
-  ],
-  partials: [Partials.Channel]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
-client.once("ready", () => {
+const TOKEN = process.env.TOKEN; // توكن البوت من Environment Variable على Railway
+
+client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// أمر إرسال لوحة الرتب
-client.on("interactionCreate", async interaction => {
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isButton()) return;
 
-  // زر الرتب
-  if (interaction.isButton()) {
-    const role = interaction.guild.roles.cache.find(r => r.name === interaction.customId);
+  // فتح تيكت
+  if (interaction.customId === 'open_ticket') {
+    const existing = interaction.guild.channels.cache.find(
+      c => c.name === `ticket-${interaction.user.id}`
+    );
+    if (existing) return interaction.reply({ content: "❌ لديك تيكت مفتوح بالفعل!", ephemeral: true });
 
-    if (!role) return interaction.reply({ content: "❌ الرتبة غير موجودة", ephemeral: true });
+    const channel = await interaction.guild.channels.create({
+      name: `ticket-${interaction.user.id}`,
+      type: ChannelType.GuildText,
+      permissionOverwrites: [
+        { id: interaction.guild.id, deny: ['ViewChannel'] },
+        { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
+      ],
+    });
 
-    await interaction.member.roles.add(role);
-    await interaction.reply({ content: `✅ تم إعطائك رتبة ${role.name}`, ephemeral: true });
-  }
-
-  // قائمة الألوان
-  if (interaction.isStringSelectMenu()) {
-    const role = interaction.guild.roles.cache.find(r => r.name === interaction.values[0]);
-
-    if (!role) return interaction.reply({ content: "❌ اللون غير موجود", ephemeral: true });
-
-    await interaction.member.roles.add(role);
-    await interaction.reply({ content: `🎨 تم اختيار لون ${role.name}`, ephemeral: true });
-  }
-});
-
-// أمر سلاش لإنشاء اللوحة
-client.on("ready", async () => {
-  const data = [{
-    name: "panel",
-    description: "إرسال لوحة الرتب"
-  }];
-
-  await client.application.commands.set(data);
-});
-
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === "panel") {
-
-    const buttons = new ActionRowBuilder();
-
-    for (let i = 1; i <= 10; i++) {
-      buttons.addComponents(
-        new ButtonBuilder()
-          .setCustomId(`${i}`)
-          .setLabel(`${i}`)
-          .setStyle(ButtonStyle.Primary)
-      );
-    }
-
-    const colors = new ActionRowBuilder().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId("colors")
-        .setPlaceholder("اختر لونك")
-        .addOptions([
-          { label: "Red", value: "Red" },
-          { label: "Blue", value: "Blue" },
-          { label: "Green", value: "Green" }
-        ])
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('close_ticket')
+        .setLabel('إغلاق التيكت')
+        .setStyle(ButtonStyle.Danger)
     );
 
-    await interaction.reply({
-      content: "🎭 اختر مستواك أو لونك:",
-      components: [buttons, colors]
-    });
+    channel.send({ content: `أهلاً <@${interaction.user.id}>!`, components: [row] });
+    interaction.reply({ content: `✅ تم فتح التيكت: ${channel}`, ephemeral: true });
+  }
+
+  // غلق تيكت
+  if (interaction.customId === 'close_ticket') {
+    if (!interaction.channel.name.startsWith('ticket-')) 
+      return interaction.reply({ content: "❌ هذه ليست قناة تيكت!", ephemeral: true });
+
+    await interaction.reply({ content: "⏳ سيتم حذف التيكت خلال 5 ثواني..." });
+    setTimeout(() => interaction.channel.delete(), 5000);
   }
 });
 
-client.login(process.env.TOKEN);
+// لوحة البوت / تيكت بانل
+client.on('messageCreate', async message => {
+  if (message.content === '/panel') {
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('open_ticket')
+        .setLabel('افتح تيكت')
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    message.channel.send({ content: 'اضغط على الزر لفتح تيكت', components: [row] });
+  }
+});
+
+client.login(TOKEN);
