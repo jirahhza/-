@@ -1,13 +1,14 @@
 {
-  "name": "evil-level-bot",
+  "name": "ticket-bot",
   "version": "1.0.0",
-  "description": "Level & Color Role Bot",
+  "description": "بوت تيكت لديسكورد يعمل 24/7 على Railway",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "author": "YourName",
+  "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5"
+    "discord.js": "^14.16.0"
   }
 }
