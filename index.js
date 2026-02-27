@@ -60,17 +60,22 @@ client.on('interactionCreate', async interaction => {
 });
 
 // لوحة البوت / تيكت بانل
-client.on('messageCreate', async message => {
-  if (message.content === '/panel') {
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('open_ticket')
-        .setLabel('افتح تيكت')
-        .setStyle(ButtonStyle.Primary)
-    );
-
-    message.channel.send({ content: 'اضغط على الزر لفتح تيكت', components: [row] });
+client.on('interactionCreate', async interaction => {
+  // التعامل مع أزرار فتح وغلق التيكت (الكود موجود عندك)
+  
+  // أوامر سلاش
+  if (interaction.isChatInputCommand()) {
+    if (interaction.commandName === 'panel') {
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('open_ticket')
+          .setLabel('افتح تيكت')
+          .setStyle(ButtonStyle.Primary)
+      );
+      await interaction.reply({ content: 'اضغط على الزر لفتح تيكت', components: [row], ephemeral: true });
+    }
   }
 });
+
 
 client.login(TOKEN);
