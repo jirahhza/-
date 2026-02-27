@@ -61,9 +61,9 @@ client.on('interactionCreate', async interaction => {
 
 // لوحة البوت / تيكت بانل
 client.on('interactionCreate', async interaction => {
-  // التعامل مع أزرار فتح وغلق التيكت (الكود موجود عندك)
-  
-  // أوامر سلاش
+  // التعامل مع أزرار فتح وغلق التيكت كما في الكود الحالي
+
+  // استجابة لأمر /panel
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === 'panel') {
       const row = new ActionRowBuilder().addComponents(
@@ -76,6 +76,5 @@ client.on('interactionCreate', async interaction => {
     }
   }
 });
-
 
 client.login(TOKEN);
