@@ -1,7 +1,7 @@
 {
-  "name": "ticket-bot",
+  "name": "wicks-like-ticket-bot",
   "version": "1.0.0",
-  "description": "بوت تيكت جاهز 24/7 على Railway",
+  "description": "بوت تيكت احترافي مثل Wicks",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
